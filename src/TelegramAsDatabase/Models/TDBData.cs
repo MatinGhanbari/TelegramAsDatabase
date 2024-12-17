@@ -1,11 +1,9 @@
-﻿using MemoryPack;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace TelegramAsDatabase.Models;
 
 [Serializable]
-[MemoryPackable]
-public partial class TDBData<T>
+public class TDBData<T>
 {
     public Guid Id { get; set; }
     public T Data { get; set; }
