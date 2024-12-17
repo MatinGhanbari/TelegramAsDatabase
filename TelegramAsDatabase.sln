@@ -7,8 +7,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1A89692F-CF9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{16AB618A-A0FF-4C37-A053-E557F0E56394}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramAsDatabase", "src\TelegramAsDatabase\TelegramAsDatabase.csproj", "{C7B425F1-D3F4-4265-9777-1608053FD442}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Functional", "test\Test.Functional\Test.Functional.csproj", "{D53DD25E-EF72-4444-A144-F14DA58D9307}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C7B425F1-D3F4-4265-9777-1608053FD442}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7B425F1-D3F4-4265-9777-1608053FD442}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7B425F1-D3F4-4265-9777-1608053FD442}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7B425F1-D3F4-4265-9777-1608053FD442}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D53DD25E-EF72-4444-A144-F14DA58D9307}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D53DD25E-EF72-4444-A144-F14DA58D9307}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D53DD25E-EF72-4444-A144-F14DA58D9307}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D53DD25E-EF72-4444-A144-F14DA58D9307}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C7B425F1-D3F4-4265-9777-1608053FD442} = {1A89692F-CF93-4969-A60B-CA5C601F7527}
+		{D53DD25E-EF72-4444-A144-F14DA58D9307} = {16AB618A-A0FF-4C37-A053-E557F0E56394}
 	EndGlobalSection
 EndGlobal
