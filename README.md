@@ -5,13 +5,13 @@ The official repository for telegram as database
 # Getting start
 1. Create a bot using bot father in telegram (Important: **Dont Change the bot description at all**)
 
-    ![botfather](./assets/images/botfather.png)
+    ![botfather](https://raw.githubusercontent.com/MatinGhanbari/TelegramAsDatabase/refs/heads/main/assets/images/botfather.png)
 2. Create a channel as a database source in telegram
     
-    ![channel](./assets/images/channel.png)
+    ![channel](https://raw.githubusercontent.com/MatinGhanbari/TelegramAsDatabase/refs/heads/main/assets/images/channel.png)
 3. Now add your bot that created in the first step to the channel as an administrator and give all premissions to it.
     
-    ![channel](./assets/images/adminrights.png)
+    ![channel](https://raw.githubusercontent.com/MatinGhanbari/TelegramAsDatabase/refs/heads/main/assets/images/adminrights.png)
 4. Goto your appsettings and add TDB config to it.:
     - The api key is key that you get from BotFather in the first step
     - The Channel Id is the id of the channel you can get it by forwarding a message of the channel to @userinfobot bot.
