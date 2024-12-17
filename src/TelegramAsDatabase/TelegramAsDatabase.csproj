@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MemoryPack" Version="1.21.3" />
+		<PackageReference Include="FluentResults" Version="3.16.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+		<PackageReference Include="ServiceStack.Redis" Version="8.4.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+		<PackageReference Include="FluentResults.Extensions.AspNetCore" Version="0.1.0" />
+		<PackageReference Include="Telegram.Bot" Version="22.2.0" />
+	</ItemGroup>
+
+</Project>
