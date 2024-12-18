@@ -144,6 +144,24 @@ public class TDB : ITDB
         }
     }
 
+    public async Task<Result> DeleteAsync(string key, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!_tdbKeyValueIndex.IndexIds.Remove(key, out var messageId))
+                return Result.Fail("key does not exists");
+
+            UpdateIndex(cancellationToken);
+            Task.Run(async () => await _bot.DeleteMessage(_config.ChannelId, messageId, cancellationToken), cancellationToken);
+
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            return Result.Fail(exception.Message);
+        }
+    }
+
     public async Task<Result> ClearAsync(CancellationToken cancellationToken = default)
     {
         try
