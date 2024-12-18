@@ -12,8 +12,9 @@ public class TDB : ITDB
 {
     private readonly TDBConfig _config;
     private readonly TelegramBotClient _bot;
-    private int dbIndexMessageId;
-    private TDBIndex tdbIndex;
+
+    private TDBIndex _tdbIndex;
+    private int _dbIndexMessageId;
 
     public TDB(IOptions<TDBConfig> configOptions)
     {
@@ -31,9 +32,9 @@ public class TDB : ITDB
             var desc = _bot.GetMyDescription().Result;
             if (!string.IsNullOrEmpty(desc.Description))
             {
-                dbIndexMessageId = Convert.ToInt32(desc.Description!);
-                var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, dbIndexMessageId).Result;
-                tdbIndex = message.Text!;
+                _dbIndexMessageId = Convert.ToInt32(desc.Description!);
+                var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, _dbIndexMessageId).Result;
+                _tdbIndex = message.Text!;
                 _bot.DeleteMessage(_config.ChannelId, message.MessageId);
                 return;
             }
@@ -43,10 +44,10 @@ public class TDB : ITDB
             Console.WriteLine("Cant get index message from bot description");
         }
 
-        tdbIndex = new TDBIndex();
-        var indexMessage = _bot.SendMessage(_config.ChannelId, (string)tdbIndex, ParseMode.Html).Result;
+        _tdbIndex = new TDBIndex();
+        var indexMessage = _bot.SendMessage(_config.ChannelId, (string)_tdbIndex, ParseMode.Html).Result;
         _bot.SetMyDescription(indexMessage.MessageId.ToString());
-        dbIndexMessageId = indexMessage.MessageId;
+        _dbIndexMessageId = indexMessage.MessageId;
     }
 
     private void ValidateConfig()
@@ -65,7 +66,7 @@ public class TDB : ITDB
     {
         try
         {
-            if (!tdbIndex.Data.TryGetValue(id, out var messageId)) return Result.Fail("Id does not exists");
+            if (!_tdbIndex.Data.TryGetValue(id, out var messageId)) return Result.Fail("Id does not exists");
             var message = await _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, Convert.ToInt32(messageId), cancellationToken: cancellationToken);
             TDBData<T> data = message.Text!;
             await _bot.DeleteMessage(_config.ChannelId, message.MessageId, cancellationToken: cancellationToken);
@@ -81,7 +82,7 @@ public class TDB : ITDB
     {
         try
         {
-            return tdbIndex.Data.TryGetValue(id, out _);
+            return _tdbIndex.Data.TryGetValue(id, out _);
         }
         catch (Exception exception)
         {
@@ -94,8 +95,8 @@ public class TDB : ITDB
         try
         {
             var message = await _bot.SendMessage(_config.ChannelId, data, ParseMode.Html, cancellationToken: cancellationToken);
-            tdbIndex.Data.TryAdd(data.Id, message.MessageId.ToString());
-            await _bot.EditMessageText(_config.ChannelId, dbIndexMessageId, tdbIndex, ParseMode.Html, cancellationToken: cancellationToken);
+            _tdbIndex.Data.TryAdd(data.Id, message.MessageId.ToString());
+            await _bot.EditMessageText(_config.ChannelId, _dbIndexMessageId, _tdbIndex, ParseMode.Html, cancellationToken: cancellationToken);
             return Result.Ok();
         }
         catch (Exception exception)
@@ -108,10 +109,10 @@ public class TDB : ITDB
     {
         try
         {
-            tdbIndex = new TDBIndex();
-            var indexMessage = await _bot.SendMessage(_config.ChannelId, (string)tdbIndex, ParseMode.Html, cancellationToken: cancellationToken);
+            _tdbIndex = new TDBIndex();
+            var indexMessage = await _bot.SendMessage(_config.ChannelId, (string)_tdbIndex, ParseMode.Html, cancellationToken: cancellationToken);
             await _bot.SetMyDescription(indexMessage.MessageId.ToString(), cancellationToken: cancellationToken);
-            dbIndexMessageId = indexMessage.MessageId;
+            _dbIndexMessageId = indexMessage.MessageId;
             return Result.Ok();
         }
         catch (Exception exception)

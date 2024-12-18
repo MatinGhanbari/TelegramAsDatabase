@@ -15,11 +15,6 @@ internal class HostedService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        //await _tdb.ClearAsync(cancellationToken);
-
-        var modelResult = await _tdb.GetAsync<MyTestModel>(Guid.Parse("07ead21e-fd48-4b91-a11b-f313bca898fa"), cancellationToken);
-        var newModel = modelResult.Value.Data;
-
         var id = Guid.NewGuid();
         Console.WriteLine($"Id: {id}");
 
@@ -42,8 +37,8 @@ internal class HostedService : IHostedService
         exists = await _tdb.ExistsAsync<MyTestModel>(Guid.NewGuid(), cancellationToken);
         Console.WriteLine($"ModelExists: {exists.Value}");
 
-         modelResult = await _tdb.GetAsync<MyTestModel>(id, cancellationToken);
-         newModel = modelResult.Value.Data;
+        var modelResult = await _tdb.GetAsync<MyTestModel>(id, cancellationToken);
+        var newModel = modelResult.Value.Data;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
