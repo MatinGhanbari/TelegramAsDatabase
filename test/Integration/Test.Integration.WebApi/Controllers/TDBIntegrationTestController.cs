@@ -35,5 +35,12 @@ namespace Test.Integration.WebApi.Controllers
             }, cancellationToken);
             return result.IsFailed ? BadRequest(result.Errors) : Ok();
         }
+
+        [HttpDelete("Users/{id}")]
+        public async Task<IActionResult> CreateUserAsync([FromRoute] string id, CancellationToken cancellationToken)
+        {
+            var result = await _tdb.DeleteAsync(id, cancellationToken);
+            return result.IsFailed ? BadRequest(result.Errors) : Ok();
+        }
     }
 }
