@@ -1,13 +1,10 @@
 ﻿using FluentResults;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
 using Microsoft.Extensions.Options;
-using System.Threading;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using TelegramAsDatabase.Configs;
 using TelegramAsDatabase.Contracts;
 using TelegramAsDatabase.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TelegramAsDatabase.Implementations;
 
@@ -31,6 +28,7 @@ public class TDB : ITDB
         _tdbKeyValueIndex = GetOrCreateIndex(indexMessageId);
     }
 
+    #region [- Private Methods -]
     private void ValidateBotClient(ITelegramBotClient bot)
     {
         try
@@ -47,7 +45,7 @@ public class TDB : ITDB
     {
         if (messageId != default)
         {
-            _indexMessageId = (int)messageId;
+            _indexMessageId = messageId;
 
             var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, _indexMessageId).Result;
 
@@ -63,6 +61,22 @@ public class TDB : ITDB
 
         return tdbIndex;
     }
+
+    private async Task<string> GetMessageText(int messageId, bool deleteForwardedMessage = true, CancellationToken cancellationToken = default)
+    {
+        var message = await _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, messageId, cancellationToken: cancellationToken);
+
+        if (deleteForwardedMessage)
+            Task.Run(async () => await _bot.DeleteMessage(_config.ChannelId, message.MessageId, cancellationToken), cancellationToken);
+
+        return message.Text;
+    }
+
+    private async Task UpdateIndex(CancellationToken cancellationToken = default)
+    {
+        Task.Run(async () => await _bot.EditMessageText(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex, ParseMode.Html, cancellationToken: cancellationToken), cancellationToken);
+    }
+    #endregion
 
     public async Task<Result<TDBData<T>>> GetAsync<T>(string key, CancellationToken cancellationToken = default)
     {
@@ -143,20 +157,5 @@ public class TDB : ITDB
         {
             return Result.Fail(exception.Message);
         }
-    }
-
-    private async Task<string> GetMessageText(int messageId, bool deleteForwardedMessage = true, CancellationToken cancellationToken = default)
-    {
-        var message = await _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, messageId, cancellationToken: cancellationToken);
-
-        if (deleteForwardedMessage)
-            Task.Run(async () => await _bot.DeleteMessage(_config.ChannelId, message.MessageId, cancellationToken), cancellationToken);
-
-        return message.Text;
-    }
-
-    private async Task UpdateIndex(CancellationToken cancellationToken = default)
-    {
-        Task.Run(async () => await _bot.EditMessageText(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex, ParseMode.Html, cancellationToken: cancellationToken), cancellationToken);
     }
 }
