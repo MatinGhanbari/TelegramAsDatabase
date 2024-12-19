@@ -215,6 +215,31 @@ public class TDB : ITDB
         }
     }
 
+    public async Task<Result> DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var keysList = keys.ToList();
+            var messageIds = new List<int>();
+
+            foreach (var key in keysList)
+            {
+                if (_tdbKeyValueIndex.Value.IndexIds.Remove(key, out var messageId))
+                    messageIds.Add(messageId);
+            }
+
+            Task.Run(async () => await _bot.DeleteMessages(_config.ChannelId, messageIds, cancellationToken), cancellationToken);
+
+            UpdateIndex(cancellationToken);
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception.Message);
+            return Result.Fail(exception.Message);
+        }
+    }
+
     public async Task<Result> ClearAsync(CancellationToken cancellationToken = default)
     {
         try
