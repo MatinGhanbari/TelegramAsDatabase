@@ -17,9 +17,7 @@ The official repository for telegram as database
     - The Channel Id is the id of the channel you can get it by forwarding a message of the channel to @userinfobot bot.
     ```json
     "TDBConfig": {
-        // The api key that you get from BotFather in the first step
         "ApiKey": "7753344678:AAFf4MIQSShxa4djp172DjhDe2_jqRsyOeU",
-        // The Channel Id
         "ChannelId": "-1002378130994"
     }
     ```
@@ -35,41 +33,46 @@ The official repository for telegram as database
 # How to use
 The example code of using the TDB:
 ```csharp
-internal class TestService
+public class MyCustomService
 {
-    private readonly ITDB _tdb;
-    public TestService(ITDB tdb)
+    private ITDB _tdbService;
+
+    public MyCustomService(ITDB tdb)
     {
-        _tdb = tdb;
+        _tdbService = tdb;
     }
 
-    public async Task StartService(CancellationToken cancellationToken)
+    public async Task MyCustomMethod(CancellationToken cancellationToken)
     {
-        // This line clears all data from db
-        //await _tdb.ClearAsync(cancellationToken);
+        // [--------- GetAllKeysAsync ---------]
+        var allKeys = await _tdbService.GetAllKeysAsync(cancellationToken);
 
-        var id = Guid.NewGuid();
-
-        var model = new MyTestModel()
+        // [------------ SaveAsync ------------]
+        var saveResult = await _tdbService.SaveAsync(new TDBData<MyTestModel>()
         {
-            Name = "FirstTest",
-            Description = "FirstDescription",
-            Type = "FuncTest"
-        };
-
-        var result = await _tdb.SaveAsync(new TDBData<MyTestModel>()
-        {
-            Id = id,
-            Data = model
+            Key = "item-key",
+            Value = new MyTestModel()
+            {
+                Name = "FirstTest",
+                Description = "FirstDescription",
+                Type = "FuncTest"
+            }
         }, cancellationToken);
 
-        var exists = await _tdb.ExistsAsync<MyTestModel>(id, cancellationToken);
-        Console.WriteLine($"ModelExists: {exists.Value}");
-       
-         modelResult = await _tdb.GetAsync<MyTestModel>(id, cancellationToken);
-         var data = modelResult.Value.Data;
+        // [--------- UpdateAsync ---------]
+        var updateResult = await _tdbService.UpdateAsync("item-key", new TDBData<MyTestModel>()
+        {
+            Key = "item-key",
+            Value = new MyTestModel()
+            {
+                Name = "FirstTest2",
+                Description = "FirstDescription2",
+                Type = "FuncTest2"
+            }
+        }, cancellationToken);
 
-         Console.WriteLine(data.Name); // output: FirstTest
+        // [--------- DeleteAsync ---------]
+        var deleteResult = await _tdbService.DeleteAsync("item-key", cancellationToken);
     }
 }
 ```
