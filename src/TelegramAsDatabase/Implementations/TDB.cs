@@ -108,6 +108,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -120,6 +121,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -132,6 +134,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -151,6 +154,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -170,6 +174,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -186,6 +191,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -204,6 +210,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -219,6 +226,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
