@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramAsDatabase.Configs;
 using TelegramAsDatabase.Contracts;
@@ -23,6 +24,7 @@ public class TDB : ITDB, IDisposable
     public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot, ILogger<TDB> logger)
     {
         ValidateBotClient(bot);
+        SetDefaultBotPrivileges(bot);
 
         _bot = bot;
         _logger = logger;
@@ -40,6 +42,17 @@ public class TDB : ITDB, IDisposable
             {
                 _logger.LogDebug("TDB KeyValueIndex loaded");
             }
+        });
+    }
+
+    private void SetDefaultBotPrivileges(ITelegramBotClient bot)
+    {
+        bot.SetMyDefaultAdministratorRights(new ChatAdministratorRights()
+        {
+            CanPostMessages = true,
+            CanEditMessages = true,
+            CanDeleteMessages = true,
+            CanPinMessages = true,
         });
     }
 
