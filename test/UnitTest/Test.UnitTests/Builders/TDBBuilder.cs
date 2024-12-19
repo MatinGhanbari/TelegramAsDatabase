@@ -2,6 +2,11 @@
 using Microsoft.Extensions.Options;
 using Moq;
 using Telegram.Bot;
+using Telegram.Bot.Args;
+using Telegram.Bot.Exceptions;
+using Telegram.Bot.Requests;
+using Telegram.Bot.Requests.Abstractions;
+using Telegram.Bot.Types;
 using TelegramAsDatabase.Configs;
 using TelegramAsDatabase.Contracts;
 using TelegramAsDatabase.Implementations;
@@ -13,56 +18,79 @@ public class TDBBuilder
     private static readonly Faker Faker = new("en");
 
     private readonly Mock<ITelegramBotClient> _botClientMock;
-    private readonly Mock<IOptions<TDBConfig>> _configMock;
+    private IOptions<TDBConfig> _configMock;
 
     public TDBBuilder()
     {
         _botClientMock = new();
-        _configMock = new();
     }
 
     public ITDB Build()
     {
-        // Todo: Setup Mock
-        //_botClientMock.Setup(client =>
-        //    client.SendMessage(
-        //        It.IsAny<ChatId>(),
-        //        It.IsAny<string>(),
-        //        It.IsAny<ParseMode>(),
-        //        It.IsAny<ReplyParameters?>(),
-        //        It.IsAny<IReplyMarkup?>(),
-        //        It.IsAny<LinkPreviewOptions?>(),
-        //        It.IsAny<int?>(),
-        //        It.IsAny<IEnumerable<MessageEntity>?>(),
-        //        It.IsAny<bool>(),
-        //        It.IsAny<bool>(),
-        //        It.IsAny<string?>(),
-        //        It.IsAny<string?>(),
-        //        It.IsAny<bool>(),
-        //        It.IsAny<CancellationToken>()
-        //    )
-        //).Returns(Task.FromResult(new Message() { Id = Faker.Random.Int() }));
+        _configMock = new OptionsWrapper<TDBConfig>(new TDBConfig()
+        {
+            ChannelId = "-1000000",
+            ApiKey = "RANDOM_API_KEY"
+        });
 
-        //_botClientMock.Setup(client =>
-        //    client.ForwardMessage(
-        //        It.IsAny<int>(),
-        //        It.IsAny<int>(),
-        //        It.IsAny<int>(),
-        //        It.IsAny<int?>(),
-        //        It.IsAny<bool>(),
-        //        It.IsAny<bool>(),
-        //        It.IsAny<CancellationToken>()
-        //        )
-        //    ).ReturnsAsync(new Message() { Id = Faker.Random.Int() });
-
-        //_botClientMock.Setup(client =>
-        //    client.DeleteMessage(
-        //        It.IsAny<int>(),
-        //        It.IsAny<int>(),
-        //        It.IsAny<CancellationToken>()
-        //        )
-        //);
-
-        return new TDB(_configMock.Object, _botClientMock.Object);
+        return new TDB(_configMock, new MockTelegramBotClient());
     }
+}
+
+public class MockClientOptions
+{
+    public bool HandleNegativeOffset { get; set; }
+    public string[] Messages { get; set; } = [];
+    public int RequestDelay { get; set; } = 10;
+    public Exception? ExceptionToThrow { get; set; }
+    public CancellationToken GlobalCancelToken { get; set; }
+
+}
+
+public class MockTelegramBotClient : ITelegramBotClient
+{
+    private readonly Queue<string[]> _messages;
+
+    public int? lastOffsetRequested = null;
+    public int MessageGroupsLeft => _messages.Count;
+    public MockClientOptions Options { get; }
+
+    public Task<TResponse> MakeRequestAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        => SendRequest(request, cancellationToken);
+    public Task<TResponse> MakeRequest<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+        => SendRequest(request, cancellationToken);
+
+    public async Task<TResponse> SendRequest<TResponse>(
+        IRequest<TResponse> request,
+        CancellationToken cancellationToken = default)
+    {
+        switch (request)
+        {
+            case GetMeRequest getMeRequest:
+            case GetMyDescriptionRequest getMyDescription:
+                return default;
+            default:
+                return (TResponse)(object)new Message() { Id = 100 };
+        }
+    }
+
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromMilliseconds(50);
+
+    public IExceptionParser ExceptionsParser { get; set; } = new DefaultExceptionParser();
+
+    // ---------------
+    // NOT IMPLEMENTED
+    // ---------------
+
+    public bool LocalBotServer => throw new NotImplementedException();
+    public long BotId => throw new NotImplementedException();
+    public event AsyncEventHandler<ApiRequestEventArgs>? OnMakingApiRequest;
+    public event AsyncEventHandler<ApiResponseEventArgs>? OnApiResponseReceived;
+    public Task DownloadFile(
+        string filePath,
+        Stream destination,
+        CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
+    public Task<bool> TestApi(CancellationToken cancellationToken = default) =>
+        throw new NotImplementedException();
 }

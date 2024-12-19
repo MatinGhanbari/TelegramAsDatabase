@@ -26,7 +26,7 @@ public class TDB : ITDB
 
         _tdbKeyValueIndex = new Lazy<TDBKeyValueIndex>(() =>
         {
-            var botDescription = _bot.GetMyDescription().Result.Description;
+            var botDescription = _bot.GetMyDescription()?.Result?.Description ?? "";
             int.TryParse(botDescription, out var indexMessageId);
             return GetOrCreateIndex(indexMessageId);
         });
