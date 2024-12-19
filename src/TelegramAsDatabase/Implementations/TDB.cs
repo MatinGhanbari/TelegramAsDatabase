@@ -172,6 +172,22 @@ public class TDB : ITDB
         }
     }
 
+    public async Task<Result> UpdateAsync<T>(string key, TDBData<T> value, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!_tdbKeyValueIndex.Value.IndexIds.TryGetValue(key, out var messageId))
+                return Result.Fail("key does not exists");
+
+            var message = await _bot.EditMessageText(_config.ChannelId, messageId, value, ParseMode.Html, cancellationToken: cancellationToken);
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            return Result.Fail(exception.Message);
+        }
+    }
+
     public async Task<Result> DeleteAsync(string key, CancellationToken cancellationToken = default)
     {
         try

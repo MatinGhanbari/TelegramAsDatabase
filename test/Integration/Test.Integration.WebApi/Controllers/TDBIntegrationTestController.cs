@@ -43,6 +43,17 @@ namespace Test.Integration.WebApi.Controllers
             return result.IsFailed ? BadRequest(result.Errors) : Ok();
         }
 
+        [HttpPut("Users/{id}")]
+        public async Task<IActionResult> UpdateUserAsync([FromRoute] string id, [FromBody] User user, CancellationToken cancellationToken)
+        {
+            var result = await _tdb.UpdateAsync(id, new TDBData<User>()
+            {
+                Key = id,
+                Value = user
+            }, cancellationToken);
+            return result.IsFailed ? BadRequest(result.Errors) : Ok();
+        }
+
         [HttpDelete("Users/{id}")]
         public async Task<IActionResult> CreateUserAsync([FromRoute] string id, CancellationToken cancellationToken)
         {
