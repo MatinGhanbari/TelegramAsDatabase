@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using Telegram.Bot;
@@ -26,7 +27,8 @@ public static class TDBServices
         {
             var configOptions = serviceProvider.GetRequiredService<IOptions<TDBConfig>>();
             var client = serviceProvider.GetKeyedService<ITelegramBotClient>(nameof(TDB));
-            return new TDB(configOptions, client);
+            var logger = serviceProvider.GetRequiredService<ILogger<TDB>>();
+            return new TDB(configOptions, client, logger);
         });
         return services;
     }
