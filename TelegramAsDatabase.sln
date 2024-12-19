@@ -9,13 +9,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{16AB618A-A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramAsDatabase", "src\TelegramAsDatabase\TelegramAsDatabase.csproj", "{C7B425F1-D3F4-4265-9777-1608053FD442}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integration", "Integration", "{6C2A317A-12B4-4C62-B516-38368666FDEE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integrations", "integrations", "{6C2A317A-12B4-4C62-B516-38368666FDEE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Integration.WebApi", "test\Integration\Test.Integration.WebApi\Test.Integration.WebApi.csproj", "{7F5D2A60-6C08-4364-8BE3-0D1CFF67DA7E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{6D3D7A1F-D8DB-41C7-893C-9F5FF930CBAB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Units", "Units", "{6D3D7A1F-D8DB-41C7-893C-9F5FF930CBAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.UnitTests", "test\UnitTest\Test.UnitTests\Test.UnitTests.csproj", "{4E947B08-EEB1-4764-9AB0-430CB823B879}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Units", "test\UnitTest\Test.UnitTests\Test.Units.csproj", "{4E947B08-EEB1-4764-9AB0-430CB823B879}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramAsDatabase.Extensions", "src\TelegramAsDatabase.Extensions\TelegramAsDatabase.Extensions.csproj", "{3D3A376C-A432-4E74-95AD-83B9C2EB4A0C}"
 EndProject

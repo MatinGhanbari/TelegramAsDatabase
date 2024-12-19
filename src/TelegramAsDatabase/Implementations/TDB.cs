@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramAsDatabase.Configs;
 using TelegramAsDatabase.Contracts;
@@ -11,7 +12,7 @@ using TelegramAsDatabase.Models;
 
 namespace TelegramAsDatabase.Implementations;
 
-public class TDB : ITDB
+public class TDB : ITDB, IDisposable
 {
     private int _indexMessageId;
     private readonly TDBConfig _config;
@@ -23,6 +24,7 @@ public class TDB : ITDB
     public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot, ILogger<TDB> logger)
     {
         ValidateBotClient(bot);
+        SetDefaultBotAdminRights(bot);
 
         _bot = bot;
         _logger = logger;
@@ -40,6 +42,17 @@ public class TDB : ITDB
             {
                 _logger.LogDebug("TDB KeyValueIndex loaded");
             }
+        });
+    }
+
+    private void SetDefaultBotAdminRights(ITelegramBotClient bot)
+    {
+        bot.SetMyDefaultAdministratorRights(new ChatAdministratorRights()
+        {
+            CanPostMessages = true,
+            CanEditMessages = true,
+            CanDeleteMessages = true,
+            CanPinMessages = true,
         });
     }
 
@@ -73,6 +86,7 @@ public class TDB : ITDB
 
         var indexMessage = _bot.SendMessage(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
         Task.Run(() => _bot.SetMyDescription(indexMessage.MessageId.ToString()));
+        Task.Run(() => _bot.PinChatMessage(_config.ChannelId, indexMessage.MessageId));
         _indexMessageId = indexMessage.MessageId;
 
         return tdbIndex;
@@ -108,6 +122,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -120,6 +135,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -132,6 +148,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -140,6 +157,8 @@ public class TDB : ITDB
     {
         try
         {
+            item.Verify();
+
             var message = await _bot.SendMessage(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
 
             _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);
@@ -149,6 +168,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -168,6 +188,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -184,6 +205,7 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -202,6 +224,32 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
+            return Result.Fail(exception.Message);
+        }
+    }
+
+    public async Task<Result> DeleteAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var keysList = keys.ToList();
+            var messageIds = new List<int>();
+
+            foreach (var key in keysList)
+            {
+                if (_tdbKeyValueIndex.Value.IndexIds.Remove(key, out var messageId))
+                    messageIds.Add(messageId);
+            }
+
+            Task.Run(async () => await _bot.DeleteMessages(_config.ChannelId, messageIds, cancellationToken), cancellationToken);
+
+            UpdateIndex(cancellationToken);
+            return Result.Ok();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
     }
@@ -210,6 +258,12 @@ public class TDB : ITDB
     {
         try
         {
+            Task.Run(() => _bot.DeleteMessages(_config.ChannelId,
+                _tdbKeyValueIndex.Value.IndexIds
+                    .Select(x => x.Value)
+                    .ToList()
+                , cancellationToken), cancellationToken);
+
             _tdbKeyValueIndex.Value.IndexIds.Clear();
             await UpdateIndex(cancellationToken);
 
@@ -217,7 +271,27 @@ public class TDB : ITDB
         }
         catch (Exception exception)
         {
+            _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
+        }
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            if (_tdbKeyValueIndex.IsValueCreated)
+            {
+                UpdateIndex(CancellationToken.None).Wait();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while disposing TDB instance.");
+        }
+        finally
+        {
+            _logger.LogInformation("The TDB instance was disposed!");
         }
     }
 }
