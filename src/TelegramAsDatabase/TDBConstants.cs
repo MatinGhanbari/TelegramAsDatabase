@@ -12,4 +12,6 @@ internal class TDBConstants
 
     internal const int MaxGroupMessagesPerMinute = 20;
     internal const int MaxChatMessagesPerSecond = 1;
+
+    internal static readonly char[] MarkdownCharacters = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
 }
