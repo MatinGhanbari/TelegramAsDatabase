@@ -24,7 +24,7 @@ public class TDB : ITDB, IDisposable
     public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot, ILogger<TDB> logger)
     {
         ValidateBotClient(bot);
-        SetDefaultBotPrivileges(bot);
+        SetDefaultBotAdminRights(bot);
 
         _bot = bot;
         _logger = logger;
@@ -45,7 +45,7 @@ public class TDB : ITDB, IDisposable
         });
     }
 
-    private void SetDefaultBotPrivileges(ITelegramBotClient bot)
+    private void SetDefaultBotAdminRights(ITelegramBotClient bot)
     {
         bot.SetMyDefaultAdministratorRights(new ChatAdministratorRights()
         {
@@ -86,6 +86,7 @@ public class TDB : ITDB, IDisposable
 
         var indexMessage = _bot.SendMessage(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
         Task.Run(() => _bot.SetMyDescription(indexMessage.MessageId.ToString()));
+        Task.Run(() => _bot.PinChatMessage(_config.ChannelId, indexMessage.MessageId));
         _indexMessageId = indexMessage.MessageId;
 
         return tdbIndex;
@@ -257,6 +258,12 @@ public class TDB : ITDB, IDisposable
     {
         try
         {
+            Task.Run(() => _bot.DeleteMessages(_config.ChannelId,
+                _tdbKeyValueIndex.Value.IndexIds
+                    .Select(x => x.Value)
+                    .ToList()
+                , cancellationToken), cancellationToken);
+
             _tdbKeyValueIndex.Value.IndexIds.Clear();
             await UpdateIndex(cancellationToken);
 

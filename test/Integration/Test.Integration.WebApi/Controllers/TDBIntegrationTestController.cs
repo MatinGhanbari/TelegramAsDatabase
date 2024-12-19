@@ -1,3 +1,4 @@
+using FluentResults;
 using Microsoft.AspNetCore.Mvc;
 using TelegramAsDatabase.Contracts;
 using TelegramAsDatabase.Models;
@@ -57,7 +58,13 @@ namespace Test.Integration.WebApi.Controllers
         [HttpDelete("Users")]
         public async Task<IActionResult> CreateUserAsync([FromBody] List<string> ids, CancellationToken cancellationToken)
         {
-            var result = await _tdb.DeleteAsync(ids, cancellationToken);
+            Result result;
+
+            if (ids == null || ids.Count == 0)
+                result = await _tdb.ClearAsync(cancellationToken);
+            else
+                result = await _tdb.DeleteAsync(ids, cancellationToken);
+
             return result.IsFailed ? BadRequest(result.Errors) : Ok();
         }
     }
