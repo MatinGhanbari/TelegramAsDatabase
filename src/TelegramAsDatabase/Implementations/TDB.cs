@@ -11,7 +11,7 @@ using TelegramAsDatabase.Models;
 
 namespace TelegramAsDatabase.Implementations;
 
-public class TDB : ITDB
+public class TDB : ITDB, IDisposable
 {
     private int _indexMessageId;
     private readonly TDBConfig _config;
@@ -253,6 +253,25 @@ public class TDB : ITDB
         {
             _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
+        }
+    }
+
+    public void Dispose()
+    {
+        try
+        {
+            if (_tdbKeyValueIndex.IsValueCreated)
+            {
+                UpdateIndex(CancellationToken.None).Wait();
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred while disposing TDB instance.");
+        }
+        finally
+        {
+            _logger.LogInformation("The TDB instance was disposed!");
         }
     }
 }
