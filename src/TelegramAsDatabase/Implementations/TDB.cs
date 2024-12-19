@@ -19,12 +19,10 @@ public class TDB : ITDB
 
     public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot)
     {
-        ValidateBotClient(_bot);
+        ValidateBotClient(bot);
 
-        _config = configOptions.Value;
-        //_bot = new TelegramBotClient(_config.ApiKey);
         _bot = bot;
-
+        _config = configOptions.Value;
 
         _tdbKeyValueIndex = new Lazy<TDBKeyValueIndex>(() =>
         {
