@@ -140,6 +140,8 @@ public class TDB : ITDB
     {
         try
         {
+            item.Verify();
+
             var message = await _bot.SendMessage(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
 
             _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);

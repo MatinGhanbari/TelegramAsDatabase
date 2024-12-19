@@ -1,3 +1,4 @@
+using TelegramAsDatabase.Models;
 using Test.UnitTests.Builders;
 using Test.UnitTests.Models;
 
@@ -13,6 +14,8 @@ public class TDBGetAsyncUnitTest
                                     .With(builder => builder.Name, "Matin")
                                     .Build();
 
+        await tdb.SaveAsync(new TDBData<User> { Key = user.Id.ToString(), Value = user });
+        
         var results = await tdb.GetAsync<User>(user.Id.ToString());
 
         Assert.True(results.IsSuccess);
@@ -34,24 +37,24 @@ public class TDBGetAsyncUnitTest
 
     [Theory]
     [InlineData("")]
-    [InlineData('_')]
-    [InlineData('*')]
-    [InlineData('[')]
-    [InlineData(']')]
-    [InlineData('(')]
-    [InlineData(')')]
-    [InlineData('~')]
-    [InlineData('`')]
-    [InlineData('>')]
-    [InlineData('#')]
-    [InlineData('+')]
-    [InlineData('-')]
-    [InlineData('=')]
-    [InlineData('|')]
-    [InlineData('{')]
-    [InlineData('}')]
-    [InlineData('.')]
-    [InlineData('!')]
+    [InlineData("_")]
+    [InlineData("*")]
+    [InlineData("[")]
+    [InlineData("]")]
+    [InlineData("(")]
+    [InlineData(")")]
+    [InlineData("~")]
+    [InlineData("`")]
+    [InlineData(">")]
+    [InlineData("#")]
+    [InlineData("+")]
+    [InlineData("-")]
+    [InlineData("=")]
+    [InlineData("|")]
+    [InlineData("{")]
+    [InlineData("}")]
+    [InlineData(".")]
+    [InlineData("!")]
     [InlineData(null)]
     public async void GetAsync_WithInvalidKey_ReturnsFailure(string value)
     {
