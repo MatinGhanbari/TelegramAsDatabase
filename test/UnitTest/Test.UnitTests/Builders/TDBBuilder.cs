@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Newtonsoft.Json;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using Telegram.Bot.Exceptions;
@@ -69,11 +70,17 @@ public class MockTelegramBotClient : ITelegramBotClient
     {
         switch (request)
         {
-            case GetMeRequest getMeRequest:
-            case GetMyDescriptionRequest getMyDescription:
-                return default;
+            case SendMessageRequest sendMessageRequest:
+            case DeleteMessageRequest deleteMessageRequest:
+            case ForwardMessageRequest forwardMessageRequest:
+                return (TResponse)(object)new Message
+                {
+                    Id = 100,
+                    Text = JsonConvert.SerializeObject(new User())
+                };
+
             default:
-                return (TResponse)(object)new Message() { Id = 100 };
+                return default;
         }
     }
 
