@@ -17,6 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTest", "UnitTest", "{6D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.UnitTests", "test\UnitTest\Test.UnitTests\Test.UnitTests.csproj", "{4E947B08-EEB1-4764-9AB0-430CB823B879}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramAsDatabase.Extensions", "src\TelegramAsDatabase.Extensions\TelegramAsDatabase.Extensions.csproj", "{3D3A376C-A432-4E74-95AD-83B9C2EB4A0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramAsDatabase.Samples", "src\TelegramAsDatabase.Samples\TelegramAsDatabase.Samples.csproj", "{2A03309A-B6E8-4D82-B18D-F407FBE4FD3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +39,14 @@ Global
 		{4E947B08-EEB1-4764-9AB0-430CB823B879}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E947B08-EEB1-4764-9AB0-430CB823B879}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E947B08-EEB1-4764-9AB0-430CB823B879}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D3A376C-A432-4E74-95AD-83B9C2EB4A0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D3A376C-A432-4E74-95AD-83B9C2EB4A0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D3A376C-A432-4E74-95AD-83B9C2EB4A0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D3A376C-A432-4E74-95AD-83B9C2EB4A0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A03309A-B6E8-4D82-B18D-F407FBE4FD3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A03309A-B6E8-4D82-B18D-F407FBE4FD3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A03309A-B6E8-4D82-B18D-F407FBE4FD3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A03309A-B6E8-4D82-B18D-F407FBE4FD3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -45,5 +57,7 @@ Global
 		{7F5D2A60-6C08-4364-8BE3-0D1CFF67DA7E} = {6C2A317A-12B4-4C62-B516-38368666FDEE}
 		{6D3D7A1F-D8DB-41C7-893C-9F5FF930CBAB} = {16AB618A-A0FF-4C37-A053-E557F0E56394}
 		{4E947B08-EEB1-4764-9AB0-430CB823B879} = {6D3D7A1F-D8DB-41C7-893C-9F5FF930CBAB}
+		{3D3A376C-A432-4E74-95AD-83B9C2EB4A0C} = {1A89692F-CF93-4969-A60B-CA5C601F7527}
+		{2A03309A-B6E8-4D82-B18D-F407FBE4FD3E} = {1A89692F-CF93-4969-A60B-CA5C601F7527}
 	EndGlobalSection
 EndGlobal
