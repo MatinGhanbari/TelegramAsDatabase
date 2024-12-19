@@ -18,6 +18,13 @@ namespace Test.Integration.WebApi.Controllers
             _tdb = tdb;
         }
 
+        [HttpGet("Users")]
+        public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
+        {
+            var result = await _tdb.GetAllKeysAsync(cancellationToken);
+            return result.IsFailed ? BadRequest("Not Found") : Ok(result.Value);
+        }
+
         [HttpGet("Users/{id}")]
         public async Task<IActionResult> GetUserAsync([FromRoute] string id, CancellationToken cancellationToken)
         {
