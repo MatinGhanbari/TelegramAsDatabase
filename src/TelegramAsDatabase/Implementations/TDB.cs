@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -14,26 +15,35 @@ public class TDB : ITDB
     private int _indexMessageId;
     private readonly TDBConfig _config;
     private readonly Lazy<TDBKeyValueIndex> _tdbKeyValueIndex;
+    private readonly ILogger<TDB> _logger;
 
     private readonly ITelegramBotClient _bot;
 
-    public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot)
+    public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot, ILogger<TDB> logger)
     {
         ValidateBotClient(bot);
 
         _bot = bot;
+        _logger = logger;
         _config = configOptions.Value;
 
         _tdbKeyValueIndex = new Lazy<TDBKeyValueIndex>(() =>
         {
-            var botDescription = _bot.GetMyDescription()?.Result?.Description ?? "";
-            int.TryParse(botDescription, out var indexMessageId);
-            return GetOrCreateIndex(indexMessageId);
+            try
+            {
+                var botDescription = _bot.GetMyDescription()?.Result?.Description ?? "";
+                int.TryParse(botDescription, out var indexMessageId);
+                return GetOrCreateIndex(indexMessageId);
+            }
+            finally
+            {
+                _logger.LogDebug("TDB KeyValueIndex loaded");
+            }
         });
     }
 
     #region [- Private Methods -]
-    private static void ValidateBotClient(ITelegramBotClient bot)
+    private void ValidateBotClient(ITelegramBotClient bot)
     {
         try
         {
@@ -41,6 +51,7 @@ public class TDB : ITDB
         }
         catch (AggregateException exception)
         {
+            _logger.LogError("TDB bot api key validation failed!");
             throw new Exception("The bot api key is not valid!");
         }
     }
