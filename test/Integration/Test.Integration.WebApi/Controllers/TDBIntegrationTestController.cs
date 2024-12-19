@@ -18,6 +18,13 @@ namespace Test.Integration.WebApi.Controllers
             _tdb = tdb;
         }
 
+        [HttpGet("Users")]
+        public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
+        {
+            var result = await _tdb.GetAllKeysAsync(cancellationToken);
+            return result.IsFailed ? BadRequest("Not Found") : Ok(result.Value);
+        }
+
         [HttpGet("Users/{id}")]
         public async Task<IActionResult> GetUserAsync([FromRoute] string id, CancellationToken cancellationToken)
         {
@@ -29,6 +36,17 @@ namespace Test.Integration.WebApi.Controllers
         public async Task<IActionResult> CreateUserAsync([FromRoute] string id, [FromBody] User user, CancellationToken cancellationToken)
         {
             var result = await _tdb.SaveAsync<User>(new TDBData<User>()
+            {
+                Key = id,
+                Value = user
+            }, cancellationToken);
+            return result.IsFailed ? BadRequest(result.Errors) : Ok();
+        }
+
+        [HttpPut("Users/{id}")]
+        public async Task<IActionResult> UpdateUserAsync([FromRoute] string id, [FromBody] User user, CancellationToken cancellationToken)
+        {
+            var result = await _tdb.UpdateAsync(id, new TDBData<User>()
             {
                 Key = id,
                 Value = user

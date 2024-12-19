@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Telegram.Bot;
@@ -33,7 +34,9 @@ public class TDBBuilder
             ApiKey = "RANDOM_API_KEY"
         });
 
-        return new TDB(_configMock, new MockTelegramBotClient());
+        var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
+
+        return new TDB(_configMock, new MockTelegramBotClient(), loggerFactory.CreateLogger<TDB>());
     }
 }
 
