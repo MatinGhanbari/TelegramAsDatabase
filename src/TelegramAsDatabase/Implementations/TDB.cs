@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -93,6 +94,18 @@ public class TDB : ITDB
 
             TDBData<T> data = message;
             return data;
+        }
+        catch (Exception exception)
+        {
+            return Result.Fail(exception.Message);
+        }
+    }
+
+    public async Task<Result<List<string>>> GetAllKeysAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return _tdbKeyValueIndex.Value.IndexIds.Select(x => x.Key).ToList();
         }
         catch (Exception exception)
         {
