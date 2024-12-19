@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
@@ -12,24 +13,29 @@ public class TDB : ITDB
 {
     private int _indexMessageId;
     private readonly TDBConfig _config;
-    private readonly TDBKeyValueIndex _tdbKeyValueIndex;
+    private readonly Lazy<TDBKeyValueIndex> _tdbKeyValueIndex;
 
     private readonly ITelegramBotClient _bot;
 
-    public TDB(IOptions<TDBConfig> configOptions)
+    public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot)
     {
-        _config = configOptions.Value;
-        _bot = new TelegramBotClient(_config.ApiKey);
-
         ValidateBotClient(_bot);
 
-        var botDescription = _bot.GetMyDescription().Result.Description;
-        int.TryParse(botDescription, out var indexMessageId);
-        _tdbKeyValueIndex = GetOrCreateIndex(indexMessageId);
+        _config = configOptions.Value;
+        //_bot = new TelegramBotClient(_config.ApiKey);
+        _bot = bot;
+
+
+        _tdbKeyValueIndex = new Lazy<TDBKeyValueIndex>(() =>
+        {
+            var botDescription = _bot.GetMyDescription().Result.Description;
+            int.TryParse(botDescription, out var indexMessageId);
+            return GetOrCreateIndex(indexMessageId);
+        });
     }
 
     #region [- Private Methods -]
-    private void ValidateBotClient(ITelegramBotClient bot)
+    private static void ValidateBotClient(ITelegramBotClient bot)
     {
         try
         {
@@ -74,7 +80,7 @@ public class TDB : ITDB
 
     private async Task UpdateIndex(CancellationToken cancellationToken = default)
     {
-        Task.Run(async () => await _bot.EditMessageText(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex, ParseMode.Html, cancellationToken: cancellationToken), cancellationToken);
+        Task.Run(async () => await _bot.EditMessageText(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex.Value, ParseMode.Html, cancellationToken: cancellationToken), cancellationToken);
     }
     #endregion
 
@@ -82,7 +88,7 @@ public class TDB : ITDB
     {
         try
         {
-            if (!_tdbKeyValueIndex.IndexIds.TryGetValue(key, out var messageId))
+            if (!_tdbKeyValueIndex.Value.IndexIds.TryGetValue(key, out var messageId))
                 return Result.Fail("key does not exists");
 
             var message = await GetMessageText(messageId, cancellationToken: cancellationToken);
@@ -100,7 +106,7 @@ public class TDB : ITDB
     {
         try
         {
-            return _tdbKeyValueIndex.IndexIds.TryGetValue(key, out _);
+            return _tdbKeyValueIndex.Value.IndexIds.TryGetValue(key, out _);
         }
         catch (Exception exception)
         {
@@ -114,7 +120,7 @@ public class TDB : ITDB
         {
             var message = await _bot.SendMessage(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
 
-            _tdbKeyValueIndex.IndexIds.TryAdd(item.Key, message.MessageId);
+            _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);
 
             UpdateIndex(cancellationToken);
             return Result.Ok();
@@ -132,7 +138,7 @@ public class TDB : ITDB
             foreach (var item in items)
             {
                 var message = await _bot.SendMessage(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
-                _tdbKeyValueIndex.IndexIds.TryAdd(item.Key, message.MessageId);
+                _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);
             }
 
             UpdateIndex(cancellationToken);
@@ -148,7 +154,7 @@ public class TDB : ITDB
     {
         try
         {
-            if (!_tdbKeyValueIndex.IndexIds.Remove(key, out var messageId))
+            if (!_tdbKeyValueIndex.Value.IndexIds.Remove(key, out var messageId))
                 return Result.Fail("key does not exists");
 
             UpdateIndex(cancellationToken);
@@ -166,7 +172,7 @@ public class TDB : ITDB
     {
         try
         {
-            _tdbKeyValueIndex.IndexIds.Clear();
+            _tdbKeyValueIndex.Value.IndexIds.Clear();
             await UpdateIndex(cancellationToken);
 
             return Result.Ok();
