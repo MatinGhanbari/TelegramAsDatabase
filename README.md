@@ -3,6 +3,20 @@ This project is a .NET application that utilizes Telegram's free cloud storage t
 
 ### Now telegram as database is availabe on nuget.org: [click here](https://www.nuget.org/packages/TelegramAsDatabase)
 
+## Features
+
+1. **Asynchronous Operations:** All methods are asynchronous (using `Task`) to avoid blocking the calling thread.
+1. **Transaction Support:** Offers the ability to begin a transaction for atomic operations.
+1. **Generic Interface:** The interface is generic (`ITDB`) allowing it to work with various data types.
+1. **Data Model:** Uses a generic data model (`TDBData<T>`) to encapsulate data and metadata.
+1. **FluentResults Integration:** Leverages the FluentResults library for robust error handling and reporting.
+1. **Cancellation Support:** All methods accept an optional `CancellationToken` for graceful cancellation.
+1. **Key-Value Storage:** Primarily designed for key-value based data storage and retrieval.
+1. **Basic CRUD Operations:** Supports common operations like Get, Set, Update, Delete, and Exists.
+1. **Bulk Operations:** Includes methods for saving and deleting multiple items in bulk.
+1. **Key Retrieval:** Provides a method to retrieve all keys currently stored.
+1. **Retry Policy:** Implements a retry policy to enhance resilience against transient failures. This policy can be configured to retry operations a specified number of times with optional backoff strategies, improving the overall reliability and availability of the service.
+
 # Getting start
 1. Create a bot using bot father in telegram (Important: **Dont Change the bot description at all**)
 
