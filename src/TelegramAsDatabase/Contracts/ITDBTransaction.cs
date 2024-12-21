@@ -1,35 +1,15 @@
 ﻿using FluentResults;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using TelegramAsDatabase.Models;
 
 namespace TelegramAsDatabase.Contracts;
 
-public interface ITDB
+public interface ITDBTransaction : IDisposable
 {
-    /// <summary>
-    /// Retrieves a single item of type TDBData<T> from the data store using the provided key.
-    /// </summary>
-    /// <typeparam name="T">The type of data being stored and retrieved.</typeparam>
-    /// <param name="key">The key used to identify the item to retrieve.</param>
-    /// <param name="cancellationToken">Optional. A token to monitor for cancellation requests.</param>
-    /// <returns>A task that resolves to a Result<TDBData<T>> representing the retrieved item or an error.</returns>
-    Task<Result<TDBData<T>>> GetAsync<T>(string key, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Retrieves all keys currently stored in the data store.
-    /// </summary>
-    /// <param name="cancellationToken">Optional. A token to monitor for cancellation requests.</param>
-    /// <returns>A task that resolves to a Result<List<string>> containing all the keys or an error.</returns>
-    Task<Result<List<string>>> GetAllKeysAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Checks if an item exists in the data store for the specified key.
-    /// </summary>
-    /// <typeparam name="T">The type of the data.</typeparam>
-    /// <param name="key">The key to check for existence.</param>
-    /// <param name="cancellationToken">Optional. A token to monitor for cancellation requests.</param>
-    /// <returns>A task that resolves to a Result<bool> indicating whether the item exists (true) or not (false).</returns>
-    Task<Result<bool>> ExistsAsync<T>(string key, CancellationToken cancellationToken = default);
-
     /// <summary>
     /// Saves a single item of type TDBData<T> to the data store.
     /// </summary>
@@ -81,5 +61,6 @@ public interface ITDB
     /// <returns>A task that resolves to a Result indicating whether the clear operation was successful or failed.</returns>
     Task<Result> ClearAsync(CancellationToken cancellationToken = default);
 
-    Task<Result<ITDBTransaction>> BeginTransaction(CancellationToken cancellationToken = default);
+    Task<Result> CommitAsync(CancellationToken cancellationToken = default);
+    Task<Result> Rollback(CancellationToken cancellationToken = default);
 }
