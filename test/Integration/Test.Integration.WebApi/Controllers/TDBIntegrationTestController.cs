@@ -19,6 +19,39 @@ namespace Test.Integration.WebApi.Controllers
             _tdb = tdb;
         }
 
+        [HttpPost("Transaction")]
+        public async Task<IActionResult> TestTransaction(CancellationToken cancellationToken)
+        {
+            using var transaction = (await _tdb.BeginTransaction(cancellationToken)).Value;
+            try
+            {
+                var user1 = new User() { Name = "User - 1" };
+                var user2 = new User() { Name = "User - 2" };
+
+                await transaction.SaveAsync(new TDBData<User>() { Key = "1", Value = user1 }, cancellationToken);
+                await transaction.SaveAsync(new TDBData<User>() { Key = "2", Value = user2 }, cancellationToken);
+
+                await transaction.DeleteAsync("2", cancellationToken);
+
+                user2.Email = "Email";
+                await transaction.SaveAsync(new TDBData<User>() { Key = "2", Value = user2 }, cancellationToken);
+
+                user1.Email = "user1@mail.com";
+                user2.Email = "user2@mail.com";
+                await transaction.UpdateAsync("11", new TDBData<User>() { Key = "1", Value = user1 }, cancellationToken);
+                await transaction.UpdateAsync("2", new TDBData<User>() { Key = "2", Value = user2 }, cancellationToken);
+
+                var result = await transaction.CommitAsync(cancellationToken);
+
+                return result.IsFailed ? BadRequest("Not Found") : Ok(result);
+            }
+            catch (Exception exception)
+            {
+                await transaction.Rollback(cancellationToken);
+                throw;
+            }
+        }
+
         [HttpGet("Users")]
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {

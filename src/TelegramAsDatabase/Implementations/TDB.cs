@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Threading;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using TelegramAsDatabase.Configs;
@@ -16,7 +18,7 @@ public class TDB : ITDB, IDisposable
 {
     private int _indexMessageId;
     private readonly TDBConfig _config;
-    private readonly Lazy<TDBKeyValueIndex> _tdbKeyValueIndex;
+    private Lazy<TDBKeyValueIndex> _tdbKeyValueIndex;
     private readonly ILogger<TDB> _logger;
 
     private readonly ITelegramBotClient _bot;
@@ -76,16 +78,35 @@ public class TDB : ITDB, IDisposable
 
     private TDBKeyValueIndex GetOrCreateIndex(int messageId = default)
     {
-        if (messageId != default)
+        try
         {
-            _indexMessageId = messageId;
+            if (messageId != default)
+            {
+                _indexMessageId = messageId;
 
-            var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, _indexMessageId).Result;
+                var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, _indexMessageId).Result;
 
-            Task.Run(() => _bot.DeleteMessage(_config.ChannelId, message.MessageId));
-            return message.Text!;
+                Task.Run(() => _bot.DeleteMessage(_config.ChannelId, message.MessageId));
+                return message.Text!;
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception.Message);
         }
 
+        var tdbIndex = new TDBKeyValueIndex();
+
+        var indexMessage = _bot.SendMessage(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
+        Task.Run(() => _bot.SetMyDescription(indexMessage.MessageId.ToString()));
+        Task.Run(() => _bot.PinChatMessage(_config.ChannelId, indexMessage.MessageId));
+        _indexMessageId = indexMessage.MessageId;
+
+        return tdbIndex;
+    }
+
+    private TDBKeyValueIndex RecreateIndex(int messageId = default)
+    {
         var tdbIndex = new TDBKeyValueIndex();
 
         var indexMessage = _bot.SendMessage(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
@@ -108,7 +129,7 @@ public class TDB : ITDB, IDisposable
 
     private async Task UpdateIndex(CancellationToken cancellationToken = default)
     {
-        Task.Run(async () => await _bot.EditMessageText(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex.Value, ParseMode.Html, cancellationToken: cancellationToken), cancellationToken);
+        _bot.EditMessageText(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex.Value, ParseMode.Html, cancellationToken: cancellationToken);
     }
     #endregion
 
@@ -207,6 +228,11 @@ public class TDB : ITDB, IDisposable
             var message = await _bot.EditMessageText(_config.ChannelId, messageId, value, ParseMode.Html, cancellationToken: cancellationToken);
             return Result.Ok();
         }
+        catch (ApiRequestException exception) when (exception.Message.Contains("message is not modified", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning(exception.Message);
+            return Result.Ok();
+        }
         catch (Exception exception)
         {
             _logger.LogError(exception.Message);
@@ -278,6 +304,64 @@ public class TDB : ITDB, IDisposable
             _logger.LogError(exception.Message);
             return Result.Fail(exception.Message);
         }
+    }
+
+    public async Task<Result<ITDBTransaction>> BeginTransaction(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (!_tdbKeyValueIndex.IsValueCreated)
+            {
+                var unused = _tdbKeyValueIndex.Value;
+            }
+
+            return Result.Ok((ITDBTransaction)new TDBTransaction(this, _indexMessageId));
+        }
+        catch (Exception exception)
+        {
+            return Result.Fail(exception.Message);
+        }
+    }
+
+    internal async Task RecreateIndex()
+    {
+        var clone = _tdbKeyValueIndex.Value.Clone();
+
+        _tdbKeyValueIndex = new Lazy<TDBKeyValueIndex>(() =>
+        {
+            try
+            {
+                var indexMessage = _bot.SendMessage(_config.ChannelId, clone, ParseMode.Html).Result;
+                Task.Run(() => _bot.SetMyDescription(indexMessage.MessageId.ToString()));
+                Task.Run(() => _bot.PinChatMessage(_config.ChannelId, indexMessage.MessageId));
+                _indexMessageId = indexMessage.MessageId;
+                return clone;
+            }
+            finally
+            {
+                _logger.LogDebug("TDB KeyValueIndex loaded");
+            }
+        });
+    }
+
+    internal async Task RollbackIndex(int indexMessageId)
+    {
+        _tdbKeyValueIndex = new Lazy<TDBKeyValueIndex>(() =>
+        {
+            try
+            {
+                _indexMessageId = indexMessageId;
+                var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, _indexMessageId).Result;
+                Task.Run(() => _bot.DeleteMessage(_config.ChannelId, message.MessageId));
+                return message.Text!;
+            }
+            finally
+            {
+                _logger.LogWarning("TDB KeyValueIndex Rollback");
+            }
+        });
+
+        await UpdateIndex();
     }
 
     public void Dispose()

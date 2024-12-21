@@ -27,8 +27,12 @@ internal class TDBTelegramBotClient : TelegramBotClient
 
     public override async Task<TResponse> SendRequest<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
     {
-        return await Policy.Handle<Exception>()
-                           .RetryAsync(_config.RetryPolicies.RetryCount, (e, i) => _logger.LogError($"{e.Message}, RetryNumber: {i}"))
-                           .ExecuteAsync(async () => await base.SendRequest(request, cancellationToken));
+        var policy = Policy
+            .Handle<Exception>(e => !e.Message.Contains("message is not modified", StringComparison.OrdinalIgnoreCase)) // Exclude exceptions with "Duplicated Id"
+            .RetryAsync(_config.RetryPolicies.RetryCount, (e, i) =>
+                _logger.LogError($"{e.Message}, RetryNumber: {i}")
+            );
+
+        return await policy.ExecuteAsync(async () => await base.SendRequest(request, cancellationToken));
     }
 }
