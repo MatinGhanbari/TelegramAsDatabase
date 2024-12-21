@@ -16,19 +16,19 @@ public static class TDBServices
     {
         services.Configure<TDBConfig>(configuration.GetSection(nameof(TDBConfig)));
 
-        services.AddKeyedSingleton<ITelegramBotClient, TelegramBotClient>(nameof(TDB), (serviceProvider, _) =>
+        services.AddKeyedSingleton<ITelegramBotClient, TDBTelegramBotClient>(nameof(TDBTelegramBotClient), (serviceProvider, _) =>
         {
             var configOptions = serviceProvider.GetRequiredService<IOptions<TDBConfig>>();
-            var apiKey = configOptions.Value.ApiKey;
-            return new TelegramBotClient(apiKey);
+            var logger = serviceProvider.GetRequiredService<ILogger<TDBTelegramBotClient>>();
+            return new TDBTelegramBotClient(configOptions, logger);
         });
 
         services.AddSingleton<ITDB, TDB>(serviceProvider =>
         {
             var configOptions = serviceProvider.GetRequiredService<IOptions<TDBConfig>>();
-            var client = serviceProvider.GetKeyedService<ITelegramBotClient>(nameof(TDB));
+            var client = serviceProvider.GetKeyedService<ITelegramBotClient>(nameof(TDBTelegramBotClient));
             var logger = serviceProvider.GetRequiredService<ILogger<TDB>>();
-            return new TDB(configOptions, client, logger);
+            return new TDB(client, configOptions, logger);
         });
         return services;
     }
@@ -44,19 +44,19 @@ public static class TDBServices
     {
         var config = configuration.Config;
 
-        services.AddKeyedSingleton<ITelegramBotClient, TelegramBotClient>(nameof(TDB), (serviceProvider, _) =>
+        services.AddKeyedSingleton<ITelegramBotClient, TDBTelegramBotClient>(nameof(TDBTelegramBotClient), (serviceProvider, _) =>
         {
             IOptions<TDBConfig> configOptions = new OptionsWrapper<TDBConfig>(config);
-            var apiKey = configOptions.Value.ApiKey;
-            return new TelegramBotClient(apiKey);
+            var logger = serviceProvider.GetRequiredService<ILogger<TDBTelegramBotClient>>();
+            return new TDBTelegramBotClient(configOptions, logger);
         });
 
         services.AddSingleton<ITDB, TDB>(serviceProvider =>
         {
             IOptions<TDBConfig> configOptions = new OptionsWrapper<TDBConfig>(config);
-            var client = serviceProvider.GetKeyedService<ITelegramBotClient>(nameof(TDB));
+            var client = serviceProvider.GetKeyedService<ITelegramBotClient>(nameof(TDBTelegramBotClient));
             var logger = serviceProvider.GetRequiredService<ILogger<TDB>>();
-            return new TDB(configOptions, client, logger);
+            return new TDB(client, configOptions, logger);
         });
         return services;
     }

@@ -8,6 +8,8 @@ builder.Services.AddTDB(sc =>
 {
     sc.Config.ApiKey = "7770450595:AAFtIQGYGHPD-CnqSoWkgQAJSYP8nnVYSSs";
     sc.Config.ChannelId = "-1002305327746";
+
+    sc.Config.RetryPolicies.RetryCount = 2;
 });
 
 builder.Services.AddControllers();

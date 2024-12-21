@@ -21,7 +21,11 @@ public class TDB : ITDB, IDisposable
 
     private readonly ITelegramBotClient _bot;
 
-    public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot, ILogger<TDB> logger)
+    public TDB(
+        [FromKeyedServices(nameof(TDBTelegramBotClient))] ITelegramBotClient bot,
+        IOptions<TDBConfig> configOptions,
+        ILogger<TDB> logger
+        )
     {
         _bot = bot;
         _logger = logger;
@@ -66,7 +70,7 @@ public class TDB : ITDB, IDisposable
         catch (AggregateException exception)
         {
             _logger.LogError("TDB bot api key validation failed!");
-            throw new Exception("The bot api key is not valid!");
+            throw new Exception("The bot api key is not valid!", exception);
         }
     }
 

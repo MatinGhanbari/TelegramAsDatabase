@@ -37,7 +37,7 @@ public class TDBBuilder
 
         var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
 
-        return new TDB(_configMock, new MockTelegramBotClient(), loggerFactory.CreateLogger<TDB>());
+        return new TDB(new MockTelegramBotClient(), _configMock, loggerFactory.CreateLogger<TDB>());
     }
 }
 
