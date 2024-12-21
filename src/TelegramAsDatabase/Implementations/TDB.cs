@@ -23,12 +23,12 @@ public class TDB : ITDB, IDisposable
 
     public TDB(IOptions<TDBConfig> configOptions, [FromKeyedServices(nameof(TDB))] ITelegramBotClient bot, ILogger<TDB> logger)
     {
-        ValidateBotClient(bot);
-        SetDefaultBotAdminRights(bot);
-
         _bot = bot;
         _logger = logger;
         _config = configOptions.Value;
+
+        ValidateBotClient(_bot);
+        SetDefaultBotAdminRights(_bot);
 
         _tdbKeyValueIndex = new Lazy<TDBKeyValueIndex>(() =>
         {
