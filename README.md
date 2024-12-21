@@ -1,6 +1,7 @@
-# TelegramAsDatabase
-The official repository for telegram as database
-### Now telegram as database (TDB) is availabe on nuget.org: [click here](https://www.nuget.org/packages/TelegramAsDatabase)
+# TDB: Telegram as database service
+This project is a .NET application that utilizes Telegram's free cloud storage to provide a simple, scalable database solution. It enables data storage and management through a Telegram bot, allowing users to interact with the database directly via Telegram. By leveraging Telegram's cloud infrastructure, the project eliminates the need for traditional database setups, offering a lightweight and efficient alternative for small to medium-scale data storage needs.
+
+### Now telegram as database is availabe on nuget.org: [click here](https://www.nuget.org/packages/TelegramAsDatabase)
 
 # Getting start
 1. Create a bot using bot father in telegram (Important: **Dont Change the bot description at all**)
