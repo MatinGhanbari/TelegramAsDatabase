@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -37,7 +38,7 @@ public class TDBBuilder
 
         var loggerFactory = LoggerFactory.Create(loggingBuilder => loggingBuilder.AddConsole());
 
-        return new TDB(new MockTelegramBotClient(), _configMock, loggerFactory.CreateLogger<TDB>());
+        return new TDB(new MockTelegramBotClient(), _configMock, loggerFactory.CreateLogger<TDB>(), new MemoryCache(new MemoryCacheOptions()));
     }
 }
 
