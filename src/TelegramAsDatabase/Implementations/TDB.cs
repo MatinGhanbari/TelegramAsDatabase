@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -20,18 +21,21 @@ public class TDB : ITDB, IDisposable
     private readonly TDBConfig _config;
     private Lazy<TDBKeyValueIndex> _tdbKeyValueIndex;
     private readonly ILogger<TDB> _logger;
+    private IMemoryCache _memoryCache;
+    private readonly TimeSpan _cacheExpiration;
 
     private readonly ITelegramBotClient _bot;
 
-    public TDB(
-        [FromKeyedServices(nameof(TDBTelegramBotClient))] ITelegramBotClient bot,
+    public TDB([FromKeyedServices(nameof(TDBTelegramBotClient))] ITelegramBotClient bot,
         IOptions<TDBConfig> configOptions,
-        ILogger<TDB> logger
-        )
+        ILogger<TDB> logger,
+        IMemoryCache memoryCache)
     {
         _bot = bot;
         _logger = logger;
+        _memoryCache = memoryCache;
         _config = configOptions.Value;
+        _cacheExpiration = TimeSpan.FromSeconds(_config.CacheExpiration);
 
         ValidateBotClient(_bot);
         SetDefaultBotAdminRights(_bot);
@@ -140,9 +144,15 @@ public class TDB : ITDB, IDisposable
             if (!_tdbKeyValueIndex.Value.IndexIds.TryGetValue(key, out var messageId))
                 return Result.Fail("key does not exists");
 
+            if (_memoryCache.TryGetValue(key, out var memoryCacheResult))
+                return Result.Ok((TDBData<T>)memoryCacheResult);
+
             var message = await GetMessageText(messageId, cancellationToken: cancellationToken);
 
             TDBData<T> data = message;
+
+            _memoryCache.Set(key, data, _cacheExpiration);
+
             return data;
         }
         catch (Exception exception)
@@ -188,6 +198,8 @@ public class TDB : ITDB, IDisposable
 
             _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);
 
+            _memoryCache.Set(item.Key, item, _cacheExpiration);
+
             UpdateIndex(cancellationToken);
             return Result.Ok();
         }
@@ -206,6 +218,7 @@ public class TDB : ITDB, IDisposable
             {
                 var message = await _bot.SendMessage(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
                 _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);
+                _memoryCache.Set(item.Key, item, _cacheExpiration);
             }
 
             UpdateIndex(cancellationToken);
@@ -226,6 +239,9 @@ public class TDB : ITDB, IDisposable
                 return Result.Fail("key does not exists");
 
             var message = await _bot.EditMessageText(_config.ChannelId, messageId, value, ParseMode.Html, cancellationToken: cancellationToken);
+
+            _memoryCache.Set(key, value, _cacheExpiration);
+
             return Result.Ok();
         }
         catch (ApiRequestException exception) when (exception.Message.Contains("message is not modified", StringComparison.OrdinalIgnoreCase))
@@ -250,6 +266,8 @@ public class TDB : ITDB, IDisposable
             UpdateIndex(cancellationToken);
             Task.Run(async () => await _bot.DeleteMessage(_config.ChannelId, messageId, cancellationToken), cancellationToken);
 
+            _memoryCache.Remove(key);
+
             return Result.Ok();
         }
         catch (Exception exception)
@@ -268,6 +286,8 @@ public class TDB : ITDB, IDisposable
 
             foreach (var key in keysList)
             {
+                _memoryCache.Remove(key);
+
                 if (_tdbKeyValueIndex.Value.IndexIds.Remove(key, out var messageId))
                     messageIds.Add(messageId);
             }
@@ -295,6 +315,10 @@ public class TDB : ITDB, IDisposable
                 , cancellationToken), cancellationToken);
 
             _tdbKeyValueIndex.Value.IndexIds.Clear();
+
+            _memoryCache.Dispose();
+            _memoryCache = new MemoryCache(new MemoryCacheOptions());
+
             await UpdateIndex(cancellationToken);
 
             return Result.Ok();
@@ -369,9 +393,9 @@ public class TDB : ITDB, IDisposable
         try
         {
             if (_tdbKeyValueIndex.IsValueCreated)
-            {
                 UpdateIndex(CancellationToken.None).Wait();
-            }
+
+            _memoryCache.Dispose();
         }
         catch (Exception ex)
         {
