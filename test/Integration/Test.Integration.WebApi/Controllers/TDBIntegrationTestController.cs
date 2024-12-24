@@ -19,6 +19,11 @@ namespace Test.Integration.WebApi.Controllers
             _tdb = tdb;
         }
 
+        /// <summary>
+        /// Transaction
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPost("Transaction")]
         public async Task<IActionResult> TestTransaction(CancellationToken cancellationToken)
         {
@@ -52,6 +57,11 @@ namespace Test.Integration.WebApi.Controllers
             }
         }
 
+        /// <summary>
+        /// GetAllUsers
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpGet("Users")]
         public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
         {
@@ -59,6 +69,12 @@ namespace Test.Integration.WebApi.Controllers
             return result.IsFailed ? BadRequest("Not Found") : Ok(result.Value);
         }
 
+        /// <summary>
+        /// GetUserAsync
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpGet("Users/{id}")]
         public async Task<IActionResult> GetUserAsync([FromRoute] string id, CancellationToken cancellationToken)
         {
@@ -66,6 +82,13 @@ namespace Test.Integration.WebApi.Controllers
             return result.IsFailed ? BadRequest("Not Found") : Ok(result.Value);
         }
 
+        /// <summary>
+        /// CreateUserAsync
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPost("Users/{id}")]
         public async Task<IActionResult> CreateUserAsync([FromRoute] string id, [FromBody] User user, CancellationToken cancellationToken)
         {
@@ -77,6 +100,13 @@ namespace Test.Integration.WebApi.Controllers
             return result.IsFailed ? BadRequest(result.Errors) : Ok();
         }
 
+        /// <summary>
+        /// UpdateUserAsync
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="user"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPut("Users/{id}")]
         public async Task<IActionResult> UpdateUserAsync([FromRoute] string id, [FromBody] User user, CancellationToken cancellationToken)
         {
@@ -88,11 +118,17 @@ namespace Test.Integration.WebApi.Controllers
             return result.IsFailed ? BadRequest(result.Errors) : Ok();
         }
 
+        /// <summary>
+        /// DeleteUserAsync
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpDelete("Users")]
-        public async Task<IActionResult> CreateUserAsync([FromBody] List<string> ids, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteUsersAsync([FromBody] List<string> ids, CancellationToken cancellationToken)
         {
             Result result;
-
+                        
             if (ids == null || ids.Count == 0)
                 result = await _tdb.ClearAsync(cancellationToken);
             else
