@@ -65,7 +65,7 @@ public class MyCustomService
         // [------------ SaveAsync ------------]
         var saveResult = await _tdbService.SaveAsync(new TDBData<MyTestModel>()
         {
-            Key = "item-key",
+            Key = "itemkey",
             Value = new MyTestModel()
             {
                 Name = "FirstTest",
@@ -75,9 +75,9 @@ public class MyCustomService
         }, cancellationToken);
 
         // [--------- UpdateAsync ---------]
-        var updateResult = await _tdbService.UpdateAsync("item-key", new TDBData<MyTestModel>()
+        var updateResult = await _tdbService.UpdateAsync("itemkey", new TDBData<MyTestModel>()
         {
-            Key = "item-key",
+            Key = "itemkey",
             Value = new MyTestModel()
             {
                 Name = "FirstTest2",
@@ -87,7 +87,7 @@ public class MyCustomService
         }, cancellationToken);
 
         // [--------- DeleteAsync ---------]
-        var deleteResult = await _tdbService.DeleteAsync("item-key", cancellationToken);
+        var deleteResult = await _tdbService.DeleteAsync("itemkey", cancellationToken);
     }
 }
 ```
