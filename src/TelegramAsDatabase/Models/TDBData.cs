@@ -14,8 +14,8 @@ public class TDBData<T>
         if (string.IsNullOrWhiteSpace(Key)) throw new ArgumentNullException(nameof(Key));
         if (Value == null) throw new ArgumentNullException(nameof(Value));
 
-        if (TDBConstants.MarkdownCharacters.Any(c => Key.Contains(c)))
-            throw new ArgumentNullException(nameof(Key));
+        //if (TDBConstants.MarkdownCharacters.Any(c => Key.Contains(c)))
+        //    throw new ArgumentNullException($"The item key contains markdown characters");
     }
 
     public static implicit operator string(TDBData<T> data) => JsonConvert.SerializeObject(data)!;

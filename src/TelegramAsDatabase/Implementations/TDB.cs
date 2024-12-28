@@ -24,14 +24,14 @@ public class TDB : ITDB, IDisposable
     private IMemoryCache _memoryCache;
     private readonly TimeSpan _cacheExpiration;
 
-    private readonly ITelegramBotClient _bot;
+    private readonly ITDBTelegramBotClient _bot;
 
     public TDB([FromKeyedServices(nameof(TDBTelegramBotClient))] ITelegramBotClient bot,
         IOptions<TDBConfig> configOptions,
         ILogger<TDB> logger,
         IMemoryCache memoryCache)
     {
-        _bot = bot;
+        _bot = (ITDBTelegramBotClient?)bot;
         _logger = logger;
         _memoryCache = memoryCache;
         _config = configOptions.Value;
@@ -87,11 +87,7 @@ public class TDB : ITDB, IDisposable
             if (messageId != default)
             {
                 _indexMessageId = messageId;
-
-                var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, _indexMessageId).Result;
-
-                Task.Run(() => _bot.DeleteMessage(_config.ChannelId, message.MessageId));
-                return message.Text!;
+                return _bot.GetAsync(_config.ChannelId, _indexMessageId).Result;
             }
         }
         catch (Exception exception)
@@ -101,7 +97,7 @@ public class TDB : ITDB, IDisposable
 
         var tdbIndex = new TDBKeyValueIndex();
 
-        var indexMessage = _bot.SendMessage(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
+        var indexMessage = _bot.SaveAsync(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
         Task.Run(() => _bot.SetMyDescription(indexMessage.MessageId.ToString()));
         Task.Run(() => _bot.PinChatMessage(_config.ChannelId, indexMessage.MessageId));
         _indexMessageId = indexMessage.MessageId;
@@ -113,7 +109,7 @@ public class TDB : ITDB, IDisposable
     {
         var tdbIndex = new TDBKeyValueIndex();
 
-        var indexMessage = _bot.SendMessage(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
+        var indexMessage = _bot.SaveAsync(_config.ChannelId, tdbIndex, ParseMode.Html).Result;
         Task.Run(() => _bot.SetMyDescription(indexMessage.MessageId.ToString()));
         Task.Run(() => _bot.PinChatMessage(_config.ChannelId, indexMessage.MessageId));
         _indexMessageId = indexMessage.MessageId;
@@ -121,19 +117,11 @@ public class TDB : ITDB, IDisposable
         return tdbIndex;
     }
 
-    private async Task<string> GetMessageText(int messageId, bool deleteForwardedMessage = true, CancellationToken cancellationToken = default)
-    {
-        var message = await _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, messageId, cancellationToken: cancellationToken);
-
-        if (deleteForwardedMessage)
-            Task.Run(async () => await _bot.DeleteMessage(_config.ChannelId, message.MessageId, cancellationToken), cancellationToken);
-
-        return message.Text;
-    }
-
     private async Task UpdateIndex(CancellationToken cancellationToken = default)
     {
-        _bot.EditMessageText(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex.Value, ParseMode.Html, cancellationToken: cancellationToken);
+        var msg = await _bot.UpdateAsync(_config.ChannelId, _indexMessageId, _tdbKeyValueIndex.Value, ParseMode.Html, cancellationToken: cancellationToken);
+        _indexMessageId = msg.MessageId;
+        Task.Run(() => _bot.SetMyDescription(_indexMessageId.ToString(), cancellationToken: cancellationToken), cancellationToken);
     }
     #endregion
 
@@ -144,10 +132,10 @@ public class TDB : ITDB, IDisposable
             if (!_tdbKeyValueIndex.Value.IndexIds.TryGetValue(key, out var messageId))
                 return Result.Fail("key does not exists");
 
-            if (_memoryCache.TryGetValue(key, out var memoryCacheResult))
+            if (_memoryCache.TryGetValue(key, out var memoryCacheResult) && memoryCacheResult != null)
                 return Result.Ok((TDBData<T>)memoryCacheResult);
 
-            var message = await GetMessageText(messageId, cancellationToken: cancellationToken);
+            var message = await _bot.GetAsync(_config.ChannelId, messageId, cancellationToken: cancellationToken);
 
             TDBData<T> data = message;
 
@@ -194,7 +182,7 @@ public class TDB : ITDB, IDisposable
         {
             item.Verify();
 
-            var message = await _bot.SendMessage(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
+            var message = await _bot.SaveAsync(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
 
             _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);
 
@@ -216,7 +204,9 @@ public class TDB : ITDB, IDisposable
         {
             foreach (var item in items)
             {
-                var message = await _bot.SendMessage(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
+                item.Verify();
+
+                var message = await _bot.SaveAsync(_config.ChannelId, item, ParseMode.Html, cancellationToken: cancellationToken);
                 _tdbKeyValueIndex.Value.IndexIds.TryAdd(item.Key, message.MessageId);
                 _memoryCache.Set(item.Key, item, _cacheExpiration);
             }
@@ -238,10 +228,12 @@ public class TDB : ITDB, IDisposable
             if (!_tdbKeyValueIndex.Value.IndexIds.TryGetValue(key, out var messageId))
                 return Result.Fail("key does not exists");
 
-            var message = await _bot.EditMessageText(_config.ChannelId, messageId, value, ParseMode.Html, cancellationToken: cancellationToken);
+            var message = await _bot.UpdateAsync(_config.ChannelId, messageId, value, ParseMode.Html, cancellationToken: cancellationToken);
+            _tdbKeyValueIndex.Value.IndexIds[key] = message.MessageId;
 
             _memoryCache.Set(key, value, _cacheExpiration);
 
+            UpdateIndex(cancellationToken);
             return Result.Ok();
         }
         catch (ApiRequestException exception) when (exception.Message.Contains("message is not modified", StringComparison.OrdinalIgnoreCase))
@@ -355,7 +347,7 @@ public class TDB : ITDB, IDisposable
         {
             try
             {
-                var indexMessage = _bot.SendMessage(_config.ChannelId, clone, ParseMode.Html).Result;
+                var indexMessage = _bot.SaveAsync(_config.ChannelId, clone, ParseMode.Html).Result;
                 Task.Run(() => _bot.SetMyDescription(indexMessage.MessageId.ToString()));
                 Task.Run(() => _bot.PinChatMessage(_config.ChannelId, indexMessage.MessageId));
                 _indexMessageId = indexMessage.MessageId;
@@ -375,9 +367,7 @@ public class TDB : ITDB, IDisposable
             try
             {
                 _indexMessageId = indexMessageId;
-                var message = _bot.ForwardMessage(_config.ChannelId, _config.ChannelId, _indexMessageId).Result;
-                Task.Run(() => _bot.DeleteMessage(_config.ChannelId, message.MessageId));
-                return message.Text!;
+                return _bot.GetAsync(_config.ChannelId, _indexMessageId).Result;
             }
             finally
             {
