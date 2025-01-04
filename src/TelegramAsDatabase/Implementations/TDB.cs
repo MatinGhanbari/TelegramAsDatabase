@@ -64,6 +64,9 @@ public class TDB : ITDB, IDisposable
             CanDeleteMessages = true,
             CanPinMessages = true,
         });
+
+        // bot.SetMyName("TDB Bot");
+        // bot.SetMyShortDescription("This is my short description");
     }
 
     #region [- Private Methods -]
