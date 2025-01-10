@@ -1,7 +1,7 @@
 # TDB: Telegram as database service
 This project is a .NET application that utilizes Telegram's free cloud storage to provide a simple, scalable database solution. It enables data storage and management through a Telegram bot, allowing users to interact with the database directly via Telegram. By leveraging Telegram's cloud infrastructure, the project eliminates the need for traditional database setups, offering a lightweight and efficient alternative for small to medium-scale data storage needs.
 
-## Features
+## ✨ Features
 
 1. **Asynchronous Operations:** All methods are asynchronous (using `Task`) to avoid blocking the calling thread.
 1. **Transaction Support:** Offers the ability to begin a transaction for atomic operations.
@@ -15,7 +15,7 @@ This project is a .NET application that utilizes Telegram's free cloud storage t
 1. **Key Retrieval:** Provides a method to retrieve all keys currently stored.
 1. **Retry Policy:** Implements a retry policy to enhance resilience against transient failures. This policy can be configured to retry operations a specified number of times with optional backoff strategies, improving the overall reliability and availability of the service.
 
-# Getting start
+# 👽 Getting start
 1. Create a bot using bot father in telegram (Important: **Dont Change the bot description at all**)
 
     ![botfather](https://raw.githubusercontent.com/MatinGhanbari/TelegramAsDatabase/refs/heads/main/assets/images/botfather.png)
@@ -43,7 +43,7 @@ This project is a .NET application that utilizes Telegram's free cloud storage t
 
 6. Done! now you can use the telegram free database
 
-# How to use
+# 🚀 How to use
 The example code of using the TDB:
 ```csharp
 public class MyCustomService
