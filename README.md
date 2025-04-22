@@ -15,16 +15,10 @@ This project is a .NET application that utilizes Telegram's free cloud storage t
 1. **Key Retrieval:** Provides a method to retrieve all keys currently stored.
 1. **Retry Policy:** Implements a retry policy to enhance resilience against transient failures. This policy can be configured to retry operations a specified number of times with optional backoff strategies, improving the overall reliability and availability of the service.
 
-# 👽 Getting start
+# ⚡ Getting start
 1. Create a bot using bot father in telegram (Important: **Dont Change the bot description at all**)
-
-    ![botfather](https://raw.githubusercontent.com/MatinGhanbari/TelegramAsDatabase/refs/heads/main/assets/images/botfather.png)
 2. Create a channel as a database source in telegram
-    
-    ![channel](https://raw.githubusercontent.com/MatinGhanbari/TelegramAsDatabase/refs/heads/main/assets/images/channel.png)
 3. Now add your bot that created in the first step to the channel as an administrator and give all premissions to it.
-    
-    ![channel](https://raw.githubusercontent.com/MatinGhanbari/TelegramAsDatabase/refs/heads/main/assets/images/adminrights.png)
 4. Goto your appsettings and add TDB config to it.:
     - The api key is key that you get from BotFather in the first step
     - The Channel Id is the id of the channel you can get it by forwarding a message of the channel to @userinfobot bot.
@@ -46,46 +40,36 @@ This project is a .NET application that utilizes Telegram's free cloud storage t
 # 🚀 How to use
 The example code of using the TDB:
 ```csharp
-public class MyCustomService
+// [--------- GetAllKeysAsync ---------]
+var allKeys = await _tdbService.GetAllKeysAsync(cancellationToken);
+
+// [------------ SaveAsync ------------]
+var saveResult = await _tdbService.SaveAsync(new TDBData<MyTestModel>()
 {
-    private ITDB _tdbService;
-
-    public MyCustomService(ITDB tdb)
+    Key = "itemkey",
+    Value = new MyTestModel()
     {
-        _tdbService = tdb;
+        Name = "FirstTest",
+        Description = "FirstDescription",
+        Type = "FuncTest"
     }
+}, cancellationToken);
 
-    public async Task MyCustomMethod(CancellationToken cancellationToken)
+// [--------- UpdateAsync ---------]
+var updateResult = await _tdbService.UpdateAsync("itemkey", new TDBData<MyTestModel>()
+{
+    Key = "itemkey",
+    Value = new MyTestModel()
     {
-        // [--------- GetAllKeysAsync ---------]
-        var allKeys = await _tdbService.GetAllKeysAsync(cancellationToken);
-
-        // [------------ SaveAsync ------------]
-        var saveResult = await _tdbService.SaveAsync(new TDBData<MyTestModel>()
-        {
-            Key = "itemkey",
-            Value = new MyTestModel()
-            {
-                Name = "FirstTest",
-                Description = "FirstDescription",
-                Type = "FuncTest"
-            }
-        }, cancellationToken);
-
-        // [--------- UpdateAsync ---------]
-        var updateResult = await _tdbService.UpdateAsync("itemkey", new TDBData<MyTestModel>()
-        {
-            Key = "itemkey",
-            Value = new MyTestModel()
-            {
-                Name = "FirstTest2",
-                Description = "FirstDescription2",
-                Type = "FuncTest2"
-            }
-        }, cancellationToken);
-
-        // [--------- DeleteAsync ---------]
-        var deleteResult = await _tdbService.DeleteAsync("itemkey", cancellationToken);
+        Name = "FirstTest2",
+        Description = "FirstDescription2",
+        Type = "FuncTest2"
     }
-}
+}, cancellationToken);
+
+// [--------- DeleteAsync ---------]
+var deleteResult = await _tdbService.DeleteAsync("itemkey", cancellationToken);
 ```
+
+# ✍️ Contribution
+Contributions are highly encouraged! Feel free to add your ideas and submit a pull request.
