@@ -15,7 +15,7 @@ This project is a .NET application that utilizes Telegram's free cloud storage t
 1. **Key Retrieval:** Provides a method to retrieve all keys currently stored.
 1. **Retry Policy:** Implements a retry policy to enhance resilience against transient failures. This policy can be configured to retry operations a specified number of times with optional backoff strategies, improving the overall reliability and availability of the service.
 
-# ⚡ Getting start
+## ⚡ Getting start
 1. Create a bot using bot father in telegram (Important: **Dont Change the bot description at all**)
 2. Create a channel as a database source in telegram
 3. Now add your bot that created in the first step to the channel as an administrator and give all premissions to it.
@@ -37,7 +37,7 @@ This project is a .NET application that utilizes Telegram's free cloud storage t
 
 6. Done! now you can use the telegram free database
 
-# 🚀 How to use
+## 🚀 How to use
 The example code of using the TDB:
 ```csharp
 // [--------- GetAllKeysAsync ---------]
@@ -71,5 +71,5 @@ var updateResult = await _tdbService.UpdateAsync("itemkey", new TDBData<MyTestMo
 var deleteResult = await _tdbService.DeleteAsync("itemkey", cancellationToken);
 ```
 
-# ✍️ Contribution
+## ✍️ Contribution
 Contributions are highly encouraged! Feel free to add your ideas and submit a pull request.
