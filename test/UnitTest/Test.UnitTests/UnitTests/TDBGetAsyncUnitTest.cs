@@ -15,7 +15,25 @@ public class TDBGetAsyncUnitTest
                                     .Build();
 
         await tdb.SaveAsync(new TDBData<User> { Key = user.Id.ToString(), Value = user });
-        
+
+        var results = await tdb.GetAsync<User>(user.Id.ToString());
+
+        Assert.True(results.IsSuccess);
+        Assert.False(results.IsFailed);
+        Assert.Empty(results.Errors);
+    }
+
+
+    [Fact]
+    public async void GetAsync_WithValidInput2_ReturnsOk()
+    {
+        var tdb = new TDBBuilder().Build();
+        var user = new UserBuilder().With(builder => builder.Id, 100)
+            .With(builder => builder.Name, "Jess")
+            .Build();
+
+        await tdb.SaveAsync(new TDBData<User> { Key = user.Id.ToString(), Value = user });
+
         var results = await tdb.GetAsync<User>(user.Id.ToString());
 
         Assert.True(results.IsSuccess);
