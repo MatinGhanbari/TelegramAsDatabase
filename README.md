@@ -1,5 +1,5 @@
 # 🖥️ TDB: Telegram As Database
-This project is a .NET application that utilizes Telegram's free cloud storage to provide a simple, scalable database solution. It enables data storage and management through a Telegram bot, allowing users to interact with the database directly via Telegram. By leveraging Telegram's cloud infrastructure, the project eliminates the need for traditional database setups, offering a lightweight and efficient alternative for small to medium-scale data storage needs.
+This project is a .NET application that utilizes Telegram's free cloud storage to provide a simple, scalable database solution. It enables data storage and management through a Telegram bot, allowing users to interact with the database (a telegram channel) directly via this library. By leveraging Telegram's cloud infrastructure, the project eliminates the need for traditional database setups, offering a lightweight and efficient alternative for small to medium-scale data storage needs.
 
 ## ✨ Features
 
